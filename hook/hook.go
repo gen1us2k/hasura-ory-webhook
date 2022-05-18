@@ -3,20 +3,24 @@ package hook
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"webhook/config"
 
+	"github.com/akrylysov/algnhsa"
 	client "github.com/ory/client-go"
 )
 
 type (
+	// Hook ...
 	Hook struct {
 		config *config.HookConfig
 		client *client.APIClient
 	}
 
-	// Response ...
+	// Response struct returns the following object
+	// back to Hasura
+	//
+	// Hasura decides what to do with the request
 	Response struct {
 		HasuraUserID string `json:"X-Hasura-User-Id"`
 		HasuraRole   string `json:"X-Hasura-Role"`
@@ -28,6 +32,7 @@ type (
 	}
 )
 
+// NewHook creates a new Hasura Webhook
 func NewHook(c *config.HookConfig) *Hook {
 	h := &Hook{config: c}
 	conf := client.NewConfiguration()
@@ -40,6 +45,7 @@ func NewHook(c *config.HookConfig) *Hook {
 	h.init()
 	return h
 }
+
 func (h *Hook) init() {
 	http.HandleFunc("/", h.handler)
 }
@@ -70,7 +76,6 @@ func (h *Hook) handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Hook) toSession(ctx context.Context, cookie string) (*client.Session, error) {
-	fmt.Println(cookie)
 	sess, _, err := h.client.V0alpha2Api.
 		ToSession(ctx).
 		Cookie(cookie).
@@ -78,6 +83,10 @@ func (h *Hook) toSession(ctx context.Context, cookie string) (*client.Session, e
 	return sess, err
 }
 
+// Start starts a web server
 func (h *Hook) Start() error {
+	if h.config.Environment == config.Production {
+		algnhsa.ListenAndServe(http.DefaultServeMux, nil)
+	}
 	return http.ListenAndServe(":8090", nil)
 }
