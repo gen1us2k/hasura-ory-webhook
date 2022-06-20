@@ -6,7 +6,7 @@ The webhook enables integration between Hasura GraphQL engine and Ory Cloud
 
 For successful integration you need to register the following services
 
-1. Ory Cloud with CNAME support (starts with growth plan)
+1. Ory Cloud with CNAME support (Start Up plan)
 2. Hasura free tier
 3. Ngrok for local environment
 
